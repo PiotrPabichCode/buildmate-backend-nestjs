@@ -13,6 +13,7 @@ async function bootstrap() {
       snapshot: true,
     },
   );
+
   await app.listen(3000);
   const url = await app.getUrl();
 
