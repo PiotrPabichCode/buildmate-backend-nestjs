@@ -9,7 +9,7 @@ export const AppConfig = registerAs(appConfigToken, () => ({
   baseUrl: env('APP_BASE_URL'),
   port: envNumber('APP_PORT', 3000),
   locale: env('APP_LOCALE', 'pl-PL'),
-  globalPrefix: env('APP_GLOBAL_PREFIX', 'api'),
+  globalPrefix: env('APP_GLOBAL_PREFIX', 'api/v1/'),
 
   logger: {
     level: env('LOGGER_LEVEL'),
