@@ -6,6 +6,8 @@ import { isEmpty } from 'lodash';
 import { UserDto } from './dto/user.dto';
 import { BusinessException } from '~/common/exceptions/business.exception';
 import { ErrorEnum } from '~/constants/error-code.constant';
+import { md5, randomValue } from '~/utils';
+import { RegisterDto } from '../auth/dto/auth.dto';
 
 @Injectable()
 export class UserService {
@@ -34,7 +36,7 @@ export class UserService {
       .getOne();
   }
 
-  async findUserByEmail(email: string): Promise<UserEntity | undefined> {
+  async findUserByUsername(email: string): Promise<UserEntity | undefined> {
     return this.userRepository
       .createQueryBuilder('user')
       .where({
@@ -49,5 +51,36 @@ export class UserService {
     });
     if (!isEmpty(exists))
       throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS);
+  }
+
+  async forceUpdatePassword(uid: number, password: string): Promise<void> {
+    const user = await this.userRepository.findOneBy({ id: uid });
+
+    const newPassword = md5(`${password}${user.psalt}`);
+    await this.userRepository.update({ id: uid }, { password: newPassword });
+  }
+
+  async register({ email, ...data }: RegisterDto): Promise<void> {
+    const exists = await this.userRepository.findOneBy({
+      email,
+    });
+    if (!isEmpty(exists))
+      throw new BusinessException(ErrorEnum.SYSTEM_USER_EXISTS);
+
+    await this.entityManager.transaction(async (manager) => {
+      const salt = randomValue(32);
+
+      const password = md5(`${data.password ?? 'a123456'}${salt}`);
+
+      const u = manager.create(UserEntity, {
+        email,
+        password,
+        psalt: salt,
+      });
+
+      const user = await manager.save(u);
+
+      return user;
+    });
   }
 }

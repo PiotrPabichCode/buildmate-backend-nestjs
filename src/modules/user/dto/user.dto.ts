@@ -1,6 +1,7 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, PartialType } from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { isEmpty } from 'lodash';
+import { PagingDto } from '~/common/dto/paging.dto';
 
 export class UserDto {
   @ApiProperty({ description: 'E-mail', example: 'pabich.dev@gmail.com' })
@@ -19,3 +20,8 @@ export class UserDto {
 }
 
 export class UserUpdateDto extends PartialType(UserDto) {}
+
+export class UserQueryDto extends IntersectionType(
+  PagingDto<UserDto>,
+  PartialType(UserDto),
+) {}
